@@ -1,0 +1,18 @@
+# Foundry build artifacts
+cache/
+out/
+
+# Dependencies (installed via `forge install`)
+lib/
+
+# Broadcast logs
+broadcast/
+
+# Environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+.idea
+.vscode
