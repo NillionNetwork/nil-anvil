@@ -1,0 +1,24 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.28"
+
+# Optimizer settings
+optimizer = true
+optimizer_runs = 200
+via_ir = true
+
+# EVM version
+evm_version = "paris"
+
+# Gas reports
+gas_reports = ["BurnWithDigest"]
+
+[rpc_endpoints]
+sepolia = "${SEPOLIA_RPC_URL}"
+mainnet = "${MAINNET_RPC_URL}"
+
+[etherscan]
+sepolia = { key = "${ETHERSCAN_API_KEY}" }
+mainnet = { key = "${ETHERSCAN_API_KEY}" }
