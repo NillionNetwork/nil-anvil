@@ -38,11 +38,11 @@ deploy-local-v:
 
 # Build Docker image
 docker-build:
-    docker build -t nil-devnet .
+    docker build -t nil-anvil .
 
 # Run Docker container
 docker-run:
-    docker run -p 8545:8545 nil-devnet
+    docker run -p 8545:8545 nil-anvil
 
 # Build and run Docker container
 docker: docker-build docker-run
