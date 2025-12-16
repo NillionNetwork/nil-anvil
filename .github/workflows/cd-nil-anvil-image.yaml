@@ -1,0 +1,112 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write # Required for OIDC
+  contents: read
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      short_sha: ${{ steps.vars.outputs.short_sha }}
+    steps:
+      - name: Set short SHA
+        id: vars
+        run: echo "short_sha=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+  build-and-push-arch:
+    needs: setup
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: "arn:aws:iam::054037142884:role/nil-anvil-github"
+          aws-region: "us-east-1"
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push arch-specific image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: public.ecr.aws/k5d9x2g2/nil-anvil:${{ needs.setup.outputs.short_sha }}-${{ matrix.arch }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+  create-and-push-manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [setup, build-and-push-arch]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: "arn:aws:iam::054037142884:role/nil-anvil-github"
+          aws-region: "us-east-1"
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: public.ecr.aws/k5d9x2g2/nil-anvil
+          tags: |
+            type=raw,value=${{ needs.setup.outputs.short_sha }}
+            type=ref,event=branch
+
+      - name: Create and push multi-arch manifest
+        run: |
+          IMAGE_BASE="public.ecr.aws/k5d9x2g2/nil-anvil"
+          AMD64_IMAGE="${IMAGE_BASE}:${{ needs.setup.outputs.short_sha }}-amd64"
+          ARM64_IMAGE="${IMAGE_BASE}:${{ needs.setup.outputs.short_sha }}-arm64"
+
+          echo "${{ steps.meta.outputs.tags }}" | while IFS= read -r tag; do
+            if [ -n "$tag" ]; then
+              echo "Creating and pushing manifest for tag: ${tag}"
+              docker manifest create "${tag}" "${AMD64_IMAGE}" "${ARM64_IMAGE}"
+              docker manifest push "${tag}"
+            fi
+          done
