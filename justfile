@@ -38,11 +38,11 @@ deploy-local-v:
 
 # Build Docker image
 docker-build:
-    docker build -t nil-anvil .
+    docker build -t public.ecr.aws/k5d9x2g2/nil-anvil:local .
 
 # Run Docker container
 docker-run:
-    docker run -p 8545:8545 nil-anvil
+    docker run -p 8545:8545 public.ecr.aws/k5d9x2g2/nil-anvil:local
 
 # Build and run Docker container
 docker: docker-build docker-run
