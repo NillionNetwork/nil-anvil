@@ -58,3 +58,25 @@ fmt:
 # Check formatting
 fmt-check:
     forge fmt --check
+
+# Deploy NIL token to Sepolia (requires PRIVATE_KEY in .env)
+deploy-token-sepolia:
+    source .env && forge script script/DeployNilToken.s.sol:DeployNilToken \
+        --rpc-url "${SEPOLIA_RPC_URL}" \
+        --broadcast \
+        -vvv
+
+# Deploy BurnWithDigest to Sepolia (requires PRIVATE_KEY in .env and NIL_TOKEN_SEPOLIA set in Deploy.s.sol)
+deploy-sepolia:
+    source .env && forge script script/Deploy.s.sol:DeployBurnWithDigest \
+        --rpc-url "${SEPOLIA_RPC_URL}" \
+        --broadcast \
+        -vvv
+
+# Deploy BurnWithDigest to Sepolia with Etherscan verification
+deploy-sepolia-verify:
+    source .env && forge script script/Deploy.s.sol:DeployBurnWithDigest \
+        --rpc-url "${SEPOLIA_RPC_URL}" \
+        --broadcast \
+        --verify \
+        -vvv
