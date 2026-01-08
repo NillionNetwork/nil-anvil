@@ -34,7 +34,7 @@ contract DeployLocal is Script {
         console.log("Step 1: Deploying NIL Token...");
         NIL nilToken = new NIL();
         console.log("  NIL Token deployed at:", address(nilToken));
-        console.log("  Total Supply:", nilToken.totalSupply() / 1e18, "NIL");
+        console.log("  Total Supply:", nilToken.totalSupply() / 1e6, "NIL");
         console.log("");
 
         // 2. Deploy BurnWithDigest Contract
@@ -47,10 +47,10 @@ contract DeployLocal is Script {
 
         // 3. Mint tokens to test user
         console.log("Step 3: Minting tokens to test user...");
-        uint256 mintAmount = 10000 * 1e18; // 10,000 NIL
+        uint256 mintAmount = 10000 * 1e6; // 10,000 NIL
         nilToken.mint(testUser, mintAmount);
-        console.log("  Minted", mintAmount / 1e18, "NIL to", testUser);
-        console.log("  Test user balance:", nilToken.balanceOf(testUser) / 1e18, "NIL");
+        console.log("  Minted", mintAmount / 1e6, "NIL to", testUser);
+        console.log("  Test user balance:", nilToken.balanceOf(testUser) / 1e6, "NIL");
         console.log("");
 
         vm.stopBroadcast();
@@ -63,15 +63,15 @@ contract DeployLocal is Script {
         // Create a test payment digest
         bytes32 testDigest = keccak256(abi.encodePacked("test_payment", block.timestamp, testUser));
 
-        uint256 burnAmount = 1000 * 1e18; // 1000 NIL
+        uint256 burnAmount = 1000 * 1e6; // 1000 NIL
 
         // Approve burn contract
-        console.log("  Approving BurnWithDigest to spend", burnAmount / 1e18, "NIL...");
+        console.log("  Approving BurnWithDigest to spend", burnAmount / 1e6, "NIL...");
         nilToken.approve(address(burnContract), burnAmount);
 
         // Execute burn
         console.log("  Executing burnWithDigest...");
-        console.log("    Amount:", burnAmount / 1e18, "NIL");
+        console.log("    Amount:", burnAmount / 1e6, "NIL");
         console.log("    Digest:", vm.toString(testDigest));
 
         burnContract.burnWithDigest(burnAmount, testDigest);
@@ -81,8 +81,8 @@ contract DeployLocal is Script {
         // 5. Verify results
         console.log("");
         console.log("Step 5: Verifying Results...");
-        console.log("  Test user balance after burn:", nilToken.balanceOf(testUser) / 1e18, "NIL");
-        console.log("  Dead address balance:", nilToken.balanceOf(burnContract.DEAD_ADDRESS()) / 1e18, "NIL");
+        console.log("  Test user balance after burn:", nilToken.balanceOf(testUser) / 1e6, "NIL");
+        console.log("  Dead address balance:", nilToken.balanceOf(burnContract.DEAD_ADDRESS()) / 1e6, "NIL");
         console.log("");
 
         // 6. Output deployment info for nilauth configuration

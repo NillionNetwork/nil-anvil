@@ -8,11 +8,15 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 /**
  * @title NIL
- * @notice Test NIL token that mimics mainnet (has burn, no burnWithDigest)
+ * @notice Test NIL token that mimics mainnet (has burn, no burnWithDigest, 6 decimals)
  */
 contract NIL is ERC20, ERC20Burnable {
     constructor() ERC20("NIL", "NIL") {
-        _mint(msg.sender, 1000000 * 10 ** 18); // Mint 1M tokens
+        _mint(msg.sender, 1000000 * 10 ** 6); // Mint 1M tokens
+    }
+
+    function decimals() public pure override returns (uint8) {
+        return 6;
     }
 
     function mint(address to, uint256 amount) external {
@@ -33,7 +37,7 @@ contract BurnWithDigestTest is Test {
     address public user2;
 
     // Test constants
-    uint256 constant BURN_AMOUNT = 1000 * 10 ** 18; // 1000 tokens
+    uint256 constant BURN_AMOUNT = 1000 * 10 ** 6; // 1000 tokens
     bytes32 constant TEST_DIGEST = keccak256("test_payment_digest");
     address constant DEAD_ADDRESS = 0x000000000000000000000000000000000000dEaD;
 
@@ -54,7 +58,7 @@ contract BurnWithDigestTest is Test {
         burnContract = new BurnWithDigest(address(nilToken));
 
         // Give user1 some tokens
-        nilToken.mint(user1, 10000 * 10 ** 18);
+        nilToken.mint(user1, 10000 * 10 ** 6);
     }
 
     function testConstructor() public {
@@ -127,8 +131,8 @@ contract BurnWithDigestTest is Test {
     function testMultipleBurnsWithDifferentDigests() public {
         bytes32 digest1 = keccak256("payment1");
         bytes32 digest2 = keccak256("payment2");
-        uint256 amount1 = 500 * 10 ** 18;
-        uint256 amount2 = 300 * 10 ** 18;
+        uint256 amount1 = 500 * 10 ** 6;
+        uint256 amount2 = 300 * 10 ** 6;
 
         vm.startPrank(user1);
         nilToken.approve(address(burnContract), amount1 + amount2);
@@ -152,7 +156,7 @@ contract BurnWithDigestTest is Test {
     function testRescueERC20Success() public {
         // Arrange: send some tokens directly to the contract (simulating accidental transfer)
         NIL otherToken = new NIL();
-        uint256 rescueAmount = 100 * 10 ** 18;
+        uint256 rescueAmount = 100 * 10 ** 6;
         otherToken.transfer(address(burnContract), rescueAmount);
 
         assertEq(otherToken.balanceOf(address(burnContract)), rescueAmount);
@@ -172,7 +176,7 @@ contract BurnWithDigestTest is Test {
 
     function testRescueERC20RevertsForNonOwner() public {
         NIL otherToken = new NIL();
-        uint256 rescueAmount = 100 * 10 ** 18;
+        uint256 rescueAmount = 100 * 10 ** 6;
         otherToken.transfer(address(burnContract), rescueAmount);
 
         vm.startPrank(user1);

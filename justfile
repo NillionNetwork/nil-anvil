@@ -80,3 +80,17 @@ deploy-sepolia-verify:
         --broadcast \
         --verify \
         -vvv
+
+# Deploy BurnWithDigest to Mainnet (requires PRIVATE_KEY and NIL_TOKEN_ADDRESS in .env)
+deploy-mainnet:
+    source .env && forge script script/Deploy.s.sol:DeployBurnWithDigest \
+        --rpc-url "${MAINNET_RPC_URL}" \
+        -vvv
+
+# Deploy BurnWithDigest to Mainnet with Etherscan verification
+deploy-mainnet-verify:
+    source .env && forge script script/Deploy.s.sol:DeployBurnWithDigest \
+        --rpc-url "${MAINNET_RPC_URL}" \
+        --broadcast \
+        --verify \
+        -vvv

@@ -26,9 +26,9 @@ contract DeployNilToken is Script {
 
         console.log("");
         console.log("NIL Token deployed at:", address(token));
-        console.log("Total supply:", token.totalSupply() / 1e18, "NIL");
-        console.log("Deployer balance:", token.balanceOf(deployer) / 1e18, "NIL");
+        console.log("Total supply:", token.totalSupply() / 1e6, "NIL");
+        console.log("Deployer balance:", token.balanceOf(deployer) / 1e6, "NIL");
         console.log("");
-        console.log("Next step: Update NIL_TOKEN_SEPOLIA in Deploy.s.sol with this address");
+        console.log("Next step: Set NIL_TOKEN_ADDRESS in .env with this address");
     }
 }
