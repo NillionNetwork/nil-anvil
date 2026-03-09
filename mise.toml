@@ -1,0 +1,78 @@
+[tools]
+node = "24"
+pnpm = "10"
+prek = "latest"
+actionlint = "latest"
+
+[tasks.install]
+description = "Install Forge dependencies"
+run = "forge install"
+
+[tasks.init]
+description = "Setup repository (install deps and git hooks)"
+depends = ["install"]
+run = "prek install"
+
+# --- Quality ---
+
+[tasks.fmt]
+description = "Format Solidity code"
+run = "forge fmt"
+
+[tasks."fmt:check"]
+description = "Check Solidity formatting"
+run = "forge fmt --check"
+
+[tasks.actionlint]
+description = "Lint GitHub Actions workflows"
+run = "actionlint"
+
+[tasks.check]
+description = "Format check + CI workflows"
+depends = ["fmt:check", "actionlint"]
+
+[tasks.fix]
+description = "Auto-fix formatting"
+run = "forge fmt"
+
+# --- Build & Test ---
+
+[tasks.build]
+description = "Build contracts"
+run = "forge build"
+
+[tasks.test]
+description = "Run tests"
+run = "forge test"
+
+[tasks."test:verbose"]
+description = "Run tests (verbose)"
+run = "forge test -vvvv"
+
+[tasks."test:gas"]
+description = "Run tests with gas report"
+run = "forge test --gas-report"
+
+# --- Local dev ---
+
+[tasks.anvil]
+description = "Start local Anvil node"
+run = "anvil"
+
+[tasks.deploy-local]
+description = "Deploy contracts to local Anvil"
+run = "forge script script/DeployLocal.s.sol:DeployLocal --rpc-url http://127.0.0.1:8545 --broadcast"
+
+# --- Docker ---
+
+[tasks.docker-build]
+description = "Build Docker image"
+run = "docker build -t ghcr.io/nillionnetwork/nil-anvil:local ."
+
+[tasks.docker-run]
+description = "Run Docker container"
+run = "docker run -p 8545:8545 ghcr.io/nillionnetwork/nil-anvil:local"
+
+[tasks.clean]
+description = "Clean build artifacts"
+run = "forge clean"
